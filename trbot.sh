@@ -191,7 +191,7 @@ if [ "$mdt1" == "$timeout_covenant" ] && [ "$switch2" == "off" ]; then
 	sacrament_of_choice;
 	cove=$(sed -n $socn"p" $fhome"Covenants.txt" | tr -d '\r')
 	logger "cove="$cove
-	echo $cove >> $fhome"send_coven.txt"
+	echo $cove > $fhome"send_coven.txt"
 	otv=$fhome"send_coven.txt"
 	send;
 fi

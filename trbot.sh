@@ -26,6 +26,7 @@ bui=$(sed -n 7"p" $ftb"settings.conf" | tr -d '\r')
 last_id=0
 day_of_cleaning_month=$(sed -n 8"p" $ftb"settings.conf" | sed 's/^0*//' | tr -d '\r')
 vs=$(sed -n 9"p" $ftb"settings.conf" | tr -d '\r')
+ppreconf1=$(sed -n 10"p" $ftb"settings.conf" | tr -d '\r')
 
 switch1="off"
 switch2="off"
@@ -128,8 +129,20 @@ done
 sacrament_of_choice ()
 {
 logger "sacrament_of_choice"
+
 str_col1=$(grep -cv "^#" $fhome"Covenants.txt")
 logger "str_col1="$str_col1
+str_col2=$(grep -cv "^#" $fhome"cov.txt")
+logger "str_col2="$str_col2
+
+pz=$((str_col2/str_col1))
+pz=$((pz*100))
+logger "pz="$pz
+
+if [ "$pz" -gt "90" ]; then
+	echo "" > $fhome"cov.txt"
+	logger "Cleaning cov.txt"
+fi
 
 
 again1="yes"
@@ -169,9 +182,13 @@ echo $startid > $fhome"id.txt"
 logger "chat_id1="$chat_id1
 
 
+ppreconf=0
+
 
 while true
 do
+ppreconf=$((ppreconf+1))
+
 sleep $sec4
 mdt1=$(date '+%H:%M' | sed 's/\://g' | tr -d '\r')
 mdt2=$(date '+%d' | sed 's/^0*//' | tr -d '\r')
@@ -196,7 +213,10 @@ if [ "$mdt1" == "$timeout_covenant" ] && [ "$switch2" == "off" ]; then
 	send;
 fi
 
-
+if [ "$ppreconf" -gt "$ppreconf1" ]; then
+	ppreconf=0
+	Init2;
+fi
 
 done
 

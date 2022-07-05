@@ -28,6 +28,16 @@ day_of_cleaning_month=$(sed -n 8"p" $ftb"settings.conf" | sed 's/^0*//' | tr -d 
 vs=$(sed -n 9"p" $ftb"settings.conf" | tr -d '\r')
 ppreconf1=$(sed -n 10"p" $ftb"settings.conf" | tr -d '\r')
 
+birth1=$(sed -n 11"p" $ftb"settings.conf" | tr -d '\r')
+birth2=$(sed -n 12"p" $ftb"settings.conf" | sed 's/\://g' | tr -d '\r')
+
+birth3=$(sed -n 13"p" $ftb"settings.conf" | tr -d '\r')
+birth4=$(sed -n 14"p" $ftb"settings.conf" | tr -d '\r')
+
+enable_cross=$(sed -n 15"p" $ftb"settings.conf" | tr -d '\r')
+
+find $fhome -maxdepth 1 -type f -name 'p*.txt' > $fhome"birthd_congr2.txt"
+
 switch1="off"
 switch2="off"
 }
@@ -151,13 +161,14 @@ do
 
 RANDOM=$(date +%s%N | cut -b10-19 | sed -e 's/^0*//;s/^$/0/'); socn=$(( $RANDOM % $str_col1 + 1 ));
 logger "socn="$socn
-if ! [ "$(grep $socn $fhome"cov.txt")" ]; then
+if ! [ "$(grep $socn":" $fhome"cov.txt")" ]; then
 	again1="no"
-	echo $socn >> $fhome"cov.txt"
+	echo $socn":" >> $fhome"cov.txt"
 fi
 done
 #shuf -i 6-30 -n 1
 }
+
 
 day_of_the_week ()
 {
@@ -169,6 +180,127 @@ else
 fi
 
 }
+
+
+constr_otb_birthdays ()
+{
+	logger "constr_otb_birthdays"
+	pz=$((str_col3/str_col2));	pz=$((pz*100)); logger "constr_otb_birthdays pz="$pz
+	if [ "$pz" -gt "98" ]; then
+		echo "" > $fhome"br"$b1".txt"
+		logger "constr_otb_birthdays Cleaning1 "$fhome"br"$b1".txt"
+	fi
+	
+	ftor=0
+	again1="yes"
+	while [ "$again1" = "yes" ]
+	do
+	ftor=$((ftor+1))
+	RANDOM=$(date +%s%N | cut -b10-19 | sed -e 's/^0*//;s/^$/0/'); rara=$(( $RANDOM % $str_col2 + 1 ));
+	logger "constr_otb_birthdays rara="$rara
+	if ! [ "$(grep $rara":" $fhome"br"$b1".txt")" ]; then
+		again1="no"
+		echo $rara":" >> $fhome"br"$b1".txt"
+		
+		if [ "$b1" == "1" ] || [ "$b1" == "0" ]; then
+			b2=$(sed -n $rara"p" $fhome"birthd_congr"$b1".txt" | tr -d '\r')
+			echo $b2 >> $fhome"botv.txt"
+		fi
+		if [ "$b1" == "2" ]; then
+			b2=$(sed -n $rara"p" $fhome"birthd_congr"$b1".txt" | tr -d '\r')
+			$fhome"bdstootv.sh" $b2
+		fi
+		if [ "$b1" == "3" ]; then
+			b2=$(sed -n $rara"p" $fhome"flowers.txt" | tr -d '\r')
+			echo $b2 >> $fhome"botv.txt"
+		fi
+	fi
+	str_col22=$((str_col2*2))
+	[ "$ftor" -gt "$str_col22" ] && logger "constr_otb_birthdays Cleaning2 "$fhome"br"$b1".txt" && ftor=0 && echo "" > $fhome"br"$b1".txt"
+	done
+
+}
+
+
+
+birthdays ()
+{
+logger "birthdays"
+mdt3=$(date '+%d.%m' | tr -d '\r')
+echo "" > $fhome"bds.txt"
+bids="off"
+
+str_col1=$(grep -cv "^#" $fhome"birthdays.txt")
+logger "birthdays str_col1="$str_col1
+
+if [ "$str_col1" -gt "0" ]; then
+
+for (( i=1;i<=$str_col1;i++)); do
+	test=$(sed -n $i"p" $fhome"birthdays.txt" | tr -d '\r')
+	if [ "$(echo $test | grep $mdt3)" ]; then
+		echo $test | awk -F":" '{print $2}' >> $fhome"bds.txt"
+		logger "birthday test="$test
+		bids="on"
+	fi
+done
+
+if [ "$bids" == "on" ]; then
+	logger "birthday ON board0"
+	str_col2=$(grep -cv "^#" $fhome"birthd_congr0.txt")
+	logger "birthday str_col2="$str_col2
+	str_col3=$(grep -cv "^#" $fhome"br0.txt")
+	logger "birthday str_col3="$str_col3
+	echo "" > $fhome"botv.txt"
+	b1="0"
+	constr_otb_birthdays;
+	otv=$fhome"botv.txt"
+	send;
+	
+	logger "birthday ON board1"
+	str_col2=$(grep -cv "^#" $fhome"birthd_congr1.txt")
+	logger "birthday str_col2="$str_col2
+	str_col3=$(grep -cv "^#" $fhome"br1.txt")
+	logger "birthday str_col3="$str_col3
+	echo "" > $fhome"botv.txt"
+	b1="1"
+	constr_otb_birthdays;
+	$fhome"bdstootv.sh" $fhome"bds.txt"
+	
+	if [ "$birth3" == "1" ]; then
+	logger "birthday birthday ON board2"
+	str_col2=$(grep -cv "^#" $fhome"birthd_congr2.txt")
+	logger "birthday str_col2="$str_col2
+	str_col3=$(grep -cv "^#" $fhome"br2.txt")
+	logger "birthday str_col3="$str_col3
+	b1="2"
+	echo " " >> $fhome"botv.txt"
+	echo " " >> $fhome"botv.txt"
+	constr_otb_birthdays;
+	fi
+	
+	otv=$fhome"botv.txt"
+	send;
+	
+	if [ "$birth4" == "1" ]; then
+	echo "" > $fhome"botv.txt"
+	logger "birthday flowers"
+	str_col2=$(grep -cv "^#" $fhome"flowers.txt")
+	logger "birthday str_col2="$str_col2
+	str_col3=$(grep -cv "^#" $fhome"br3.txt")
+	logger "birthday str_col3="$str_col3
+	b1="3"
+	constr_otb_birthdays;
+	fi
+	
+	otv=$fhome"botv.txt"
+	send;
+fi
+
+
+
+fi
+}
+
 
 
 if ! [ -f $fPID ]; then
@@ -193,7 +325,7 @@ sleep $sec4
 mdt1=$(date '+%H:%M' | sed 's/\://g' | tr -d '\r')
 mdt2=$(date '+%d' | sed 's/^0*//' | tr -d '\r')
 [ "$vs" == "0" ] && day_of_the_week;
-logger "mdt1="$mdt1" "$timeout_covenant"   mdt2="$mdt2" "$day_of_cleaning_month"   switch2="$switch2
+logger "mdt1="$mdt1" "$timeout_covenant"   mdt2="$mdt2" "$day_of_cleaning_month"   switch2="$switch2"    birth2="$birth2
 
 if [ "$mdt2" == "$day_of_cleaning_month" ]; then
 	if [ "$switch1" == "off" ]; then
@@ -208,10 +340,13 @@ if [ "$mdt1" == "$timeout_covenant" ] && [ "$switch2" == "off" ]; then
 	sacrament_of_choice;
 	cove=$(sed -n $socn"p" $fhome"Covenants.txt" | tr -d '\r')
 	logger "cove="$cove
+	[ "$enable_cross" == "1" ] && cove1=$(sed -n "1p" $fhome"cross.txt" | tr -d '\r') && cove=$cove1" "$cove
 	echo $cove > $fhome"send_coven.txt"
 	otv=$fhome"send_coven.txt"
 	send;
 fi
+
+[ "$mdt1" == "$birth2" ] && [ "$birth1" == "1" ] && birthdays;
 
 if [ "$ppreconf" -gt "$ppreconf1" ]; then
 	ppreconf=0

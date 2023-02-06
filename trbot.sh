@@ -145,28 +145,42 @@ logger "str_col1="$str_col1
 str_col2=$(grep -cv "^#" $fhome"cov.txt")
 logger "str_col2="$str_col2
 
-pz=$((str_col2/str_col1))
-pz=$((pz*100))
+pz=$((str_col1-str_col2))
 logger "pz="$pz
 
-if [ "$pz" -gt "90" ]; then
-	echo "" > $fhome"cov.txt"
+if [ "$pz" -lt "1" ]; then
+	#echo > $fhome"cov.txt"
+	rm -f $fhome"cov.txt"
+	touch $fhome"cov.txt"
 	logger "Cleaning cov.txt"
 fi
 
 
+local itmp=0
 again1="yes"
 while [ "$again1" = "yes" ]
 do
+itmp=$((itmp+1))
+logger "itmp="$itmp
 
-RANDOM=$(date +%s%N | cut -b10-19 | sed -e 's/^0*//;s/^$/0/'); socn=$(( $RANDOM % $str_col1 + 1 ));
-logger "socn="$socn
-if ! [ "$(grep $socn":" $fhome"cov.txt")" ]; then
-	again1="no"
-	echo $socn":" >> $fhome"cov.txt"
+if [ "$itmp" -gt "4" ] && [ "$again1" == "yes" ]; then
+	logger "+1"
+	socn=$((socn+1))
+	[ "$socn" -gt "$str_col1" ] && socn=1 && logger "end of str_col1="$str_col1
+else
+	RANDOM=$(date +%s%N | cut -b10-19 | sed -e 's/^0*//;s/^$/0/'); socn=$(( $RANDOM % $str_col1 + 1 ));
+	logger "random"
 fi
+logger "socn="$socn
+
+if ! [ "$(grep "_"$socn":" $fhome"cov.txt")" ]; then
+	again1="no"
+	echo "_"$socn":" >> $fhome"cov.txt"
+fi
+
 done
 #shuf -i 6-30 -n 1
+
 }
 
 

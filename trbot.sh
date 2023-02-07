@@ -148,7 +148,7 @@ logger "str_col2="$str_col2
 pz=$((str_col1-str_col2))
 logger "pz="$pz
 
-if [ "$pz" -lt "1" ]; then
+if [ "$pz" -lt "10" ]; then
 	#echo > $fhome"cov.txt"
 	rm -f $fhome"cov.txt"
 	touch $fhome"cov.txt"
